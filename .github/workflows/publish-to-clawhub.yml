@@ -1,0 +1,33 @@
+name: Publish to ClawHub
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install ClawHub CLI
+      run: npm install -g clawhub
+    
+    - name: Configure ClawHub
+      run: |
+        mkdir -p ~/.config/clawhub
+        echo '{
+          "registry": "https://clawhub.ai",
+          "token": "'"${{ secrets.CLAWHUB_TOKEN }}"'"
+        }' > ~/.config/clawhub/config.json
+    
+    - name: Publish Skill
+      run: |
+        printf 'yes\n' | clawhub publish . --version 1.0.0 --changelog "Initial release with 38 security testing tools"
+      working-directory: .
